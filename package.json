@@ -1,0 +1,27 @@
+{
+  "name": "sky-muzik-playwright",
+  "version": "1.0.0",
+  "description": "Playwright learning project — real E2E + API tests against sky-muzik.vercel.app, structured to follow the 12-week roadmap in playwright-wiki.html",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "SLOWMO=1000 HOLD=1500 playwright test --headed --project=chromium --workers=1",
+    "test:debug": "playwright test --debug",
+    "test:chromium": "playwright test --project=chromium",
+    "test:api": "playwright test tests/07-api.spec.ts",
+    "report": "playwright show-report",
+    "codegen": "playwright codegen https://sky-muzik.vercel.app"
+  },
+  "keywords": [
+    "playwright",
+    "testing",
+    "e2e",
+    "learning"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@types/node": "^22.0.0"
+  }
+}

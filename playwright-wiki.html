@@ -1,0 +1,823 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>html{color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Playwright Learning Wiki</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Serif:ital@0;1&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<style>
+  :root {
+    --bg: #FBFBF8;
+    --panel: #FFFFFF;
+    --ink: #1A1F1D;
+    --ink-soft: #4A544F;
+    --ink-faint: #77817B;
+    --line: #E5E4DC;
+    --line-strong: #D3D2C7;
+    --accent: #1F7A54;
+    --accent-soft: #E6F1EB;
+    --accent-ink: #12603F;
+    --warn: #B45309;
+    --warn-soft: #FBEEDC;
+    /* code panel — dark in both themes */
+    --code-bg: #171C1A;
+    --code-line: #2A312E;
+    --code-ink: #D6DEDA;
+    --code-comment: #6E7C76;
+    --code-key: #7FD1A8;
+    --code-str: #E4B575;
+    --code-num: #E88C8C;
+    --code-fn: #8AB4E8;
+    --code-attr: #C9A6E8;
+    --shadow: 0 1px 2px rgba(20,30,25,.04), 0 8px 24px rgba(20,30,25,.05);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #12160F;
+      --panel: #191E17;
+      --ink: #E9EDE6;
+      --ink-soft: #AAB3A9;
+      --ink-faint: #7C857B;
+      --line: #2A2F26;
+      --line-strong: #3A4034;
+      --accent: #5FBE8C;
+      --accent-soft: #1B2A22;
+      --accent-ink: #8FD6AF;
+      --warn: #E0A458;
+      --warn-soft: #2C2416;
+      --shadow: 0 1px 2px rgba(0,0,0,.2), 0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12160F;
+    --panel: #191E17;
+    --ink: #E9EDE6;
+    --ink-soft: #AAB3A9;
+    --ink-faint: #7C857B;
+    --line: #2A2F26;
+    --line-strong: #3A4034;
+    --accent: #5FBE8C;
+    --accent-soft: #1B2A22;
+    --accent-ink: #8FD6AF;
+    --warn: #E0A458;
+    --warn-soft: #2C2416;
+    --shadow: 0 1px 2px rgba(0,0,0,.2), 0 10px 30px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .shell {
+    display: grid;
+    grid-template-columns: 268px minmax(0, 1fr);
+    gap: 0;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    align-self: start;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 32px 22px 40px 24px;
+    border-right: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .brand .mark {
+    width: 30px; height: 30px; flex: none; border-radius: 8px;
+    background: var(--accent); color: #fff; display: grid; place-items: center;
+    font-weight: 700; font-family: "IBM Plex Mono", monospace; font-size: 15px;
+  }
+  .brand .name { font-weight: 600; font-size: 15px; letter-spacing: -.01em; }
+  .brand .sub { font-size: 11.5px; color: var(--ink-faint); font-family: "IBM Plex Mono", monospace; }
+  .toc { margin-top: 22px; display: flex; flex-direction: column; gap: 2px; }
+  .toc .group {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 16px 0 6px; padding-left: 10px;
+  }
+  .toc a {
+    display: block; text-decoration: none; color: var(--ink-soft);
+    font-size: 13.5px; padding: 5px 10px; border-radius: 7px; border-left: 2px solid transparent;
+    transition: background .15s, color .15s;
+  }
+  .toc a:hover { background: var(--accent-soft); color: var(--accent-ink); }
+
+  /* ---------- Main ---------- */
+  main { padding: 0 clamp(16px, 4vw, 56px) 96px; min-width: 0; }
+  .topbar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0 14px; margin-bottom: 8px;
+    background: linear-gradient(var(--bg) 72%, transparent);
+  }
+  .topbar .crumb { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--ink-faint); }
+  .toggle {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px;
+    background: var(--panel); color: var(--ink-soft); border: 1px solid var(--line-strong);
+    border-radius: 8px; padding: 7px 12px; cursor: pointer; display: flex; align-items: center; gap: 7px;
+  }
+  .toggle:hover { border-color: var(--accent); color: var(--accent-ink); }
+
+  .hero { padding: 18px 0 26px; border-bottom: 1px solid var(--line); margin-bottom: 40px; }
+  .hero .eyebrow {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: .04em;
+    color: var(--accent-ink); background: var(--accent-soft); display: inline-block;
+    padding: 4px 10px; border-radius: 20px; margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: clamp(30px, 5.5vw, 46px); line-height: 1.05; letter-spacing: -.025em;
+    margin: 0 0 14px; text-wrap: balance; font-weight: 700;
+  }
+  .hero p { font-size: 17px; color: var(--ink-soft); max-width: 62ch; margin: 0; }
+  .hero .meta {
+    display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 22px;
+    font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--ink-faint);
+  }
+  .hero .meta b { color: var(--ink); font-weight: 600; }
+
+  .phase { margin-bottom: 56px; scroll-margin-top: 80px; }
+  .phase-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+  .phase-head .no {
+    font-family: "IBM Plex Mono", monospace; font-size: 13px; font-weight: 600;
+    color: var(--accent); border: 1px solid var(--accent); border-radius: 6px;
+    padding: 2px 8px; flex: none;
+  }
+  .phase-head h2 { font-size: 25px; letter-spacing: -.02em; margin: 0; font-weight: 700; }
+  .phase-wk { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--ink-faint); margin: 0 0 26px 52px; }
+
+  .item { scroll-margin-top: 80px; margin: 0 0 30px; padding-left: 52px; position: relative; }
+  .item::before {
+    content: ""; position: absolute; left: 24px; top: 6px; bottom: -18px; width: 1px; background: var(--line);
+  }
+  .item:last-child::before { display: none; }
+  .item .dot {
+    position: absolute; left: 20px; top: 5px; width: 9px; height: 9px; border-radius: 50%;
+    background: var(--bg); border: 2px solid var(--accent);
+  }
+  .item h3 { font-size: 17.5px; margin: 0 0 6px; letter-spacing: -.01em; font-weight: 600; }
+  .item h3 .tag {
+    font-family: "IBM Plex Mono", monospace; font-size: 10.5px; font-weight: 500;
+    color: var(--ink-faint); background: var(--panel); border: 1px solid var(--line);
+    padding: 2px 7px; border-radius: 5px; margin-left: 8px; vertical-align: middle; white-space: nowrap;
+  }
+  .item p { margin: 0 0 12px; color: var(--ink-soft); font-size: 14.5px; max-width: 68ch; }
+  .item p code, .concept code, li code {
+    font-family: "IBM Plex Mono", monospace; font-size: .86em;
+    background: var(--accent-soft); color: var(--accent-ink);
+    padding: 1.5px 5px; border-radius: 5px;
+  }
+  .why {
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 0 0 14px;
+    font-size: 13.5px; color: var(--accent-ink); max-width: 68ch;
+  }
+  .why b { font-weight: 600; }
+
+  /* ---------- Code cards ---------- */
+  figure.code {
+    margin: 0 0 6px; border-radius: 11px; overflow: hidden;
+    border: 1px solid var(--code-line); background: var(--code-bg); box-shadow: var(--shadow);
+  }
+  figure.code figcaption {
+    display: flex; align-items: center; gap: 8px;
+    font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--code-comment);
+    padding: 9px 14px; border-bottom: 1px solid var(--code-line); background: rgba(255,255,255,.02);
+  }
+  figure.code figcaption .dots { display: flex; gap: 5px; }
+  figure.code figcaption .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--code-line); }
+  figure.code figcaption .fname { margin-left: 4px; color: var(--code-ink); }
+  figure.code figcaption .lang { margin-left: auto; text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
+  pre { margin: 0; overflow-x: auto; }
+  pre code {
+    display: block; font-family: "IBM Plex Mono", monospace; font-size: 13px; line-height: 1.7;
+    padding: 16px 18px; color: var(--code-ink); background: transparent;
+    -webkit-font-smoothing: auto;
+  }
+  /* custom hljs theme */
+  .hljs-comment, .hljs-quote { color: var(--code-comment); font-style: italic; }
+  .hljs-keyword, .hljs-built_in, .hljs-literal { color: var(--code-key); }
+  .hljs-string, .hljs-meta .hljs-string { color: var(--code-str); }
+  .hljs-number { color: var(--code-num); }
+  .hljs-title, .hljs-title.function_, .hljs-function .hljs-title { color: var(--code-fn); }
+  .hljs-attr, .hljs-property, .hljs-attribute { color: var(--code-attr); }
+  .hljs-params { color: var(--code-ink); }
+  .hljs-variable, .hljs-name { color: var(--code-ink); }
+  .hljs-punctuation, .hljs-operator { color: var(--code-comment); }
+  .hljs-type, .hljs-class .hljs-title { color: var(--code-fn); }
+
+  /* ---------- Callout / tips ---------- */
+  .callout {
+    border: 1px solid var(--line); background: var(--panel); border-radius: 12px;
+    padding: 22px 24px; margin: 0 0 22px; box-shadow: var(--shadow);
+  }
+  .callout.warn { border-color: var(--warn-soft); }
+  .callout h3 { margin: 0 0 14px; font-size: 16px; display: flex; align-items: center; gap: 9px; }
+  .callout h3 .ico { color: var(--warn); }
+  .callout ul { margin: 0; padding-left: 18px; }
+  .callout li { margin-bottom: 9px; color: var(--ink-soft); font-size: 14px; }
+  .callout li b { color: var(--ink); font-weight: 600; }
+
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 22px; }
+  .rescard {
+    border: 1px solid var(--line); border-radius: 10px; padding: 15px 16px; background: var(--panel);
+  }
+  .rescard .k { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--accent-ink); text-transform: uppercase; letter-spacing: .06em; }
+  .rescard .v { font-size: 14px; margin-top: 5px; color: var(--ink); }
+  .rescard .v a { color: var(--accent-ink); text-decoration: none; border-bottom: 1px solid var(--line-strong); }
+  .rescard .v small { color: var(--ink-faint); display: block; margin-top: 3px; font-size: 12.5px; }
+
+  .foot { border-top: 1px solid var(--line); margin-top: 40px; padding-top: 22px; color: var(--ink-faint); font-size: 13px; }
+  .foot code { font-family: "IBM Plex Mono", monospace; }
+
+  a.anchor { color: inherit; text-decoration: none; }
+  a.anchor:hover::after { content: " #"; color: var(--accent); }
+
+  /* ---------- Mobile ---------- */
+  #menu-btn { display: none; }
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar {
+      position: fixed; inset: 0 auto 0 0; z-index: 40; width: 280px; height: 100%;
+      transform: translateX(-100%); transition: transform .22s ease; box-shadow: var(--shadow);
+    }
+    body.nav-open .sidebar { transform: translateX(0); }
+    body.nav-open::after { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 30; }
+    #menu-btn { display: flex; }
+    main { padding-left: 16px; padding-right: 16px; }
+    .item, .phase-wk { padding-left: 0; }
+    .item::before, .item .dot { display: none; }
+    .phase-wk { margin-left: 0; }
+  }
+</style>
+
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="mark">PW</div>
+      <div>
+        <div class="name">Playwright Wiki</div>
+        <div class="sub">manual QC → automation</div>
+      </div>
+    </div>
+    <nav class="toc">
+      <div class="group">Phase 1 · Foundations</div>
+      <a href="#js-basics">JavaScript basics</a>
+      <a href="#async">Async / await</a>
+      <a href="#typescript">TypeScript essentials</a>
+      <a href="#setup">Project setup</a>
+      <div class="group">Phase 2 · Playwright core</div>
+      <a href="#locators">Locators</a>
+      <a href="#actions">Actions</a>
+      <a href="#assertions">Assertions & auto-wait</a>
+      <a href="#debugging">Debugging tools</a>
+      <a href="#structure">Test structure & config</a>
+      <a href="#data-driven">Data-driven tests</a>
+      <div class="group">Phase 3 · Pro patterns</div>
+      <a href="#pom">Page Object Model</a>
+      <a href="#api">API testing</a>
+      <a href="#auth">Auth reuse (storageState)</a>
+      <a href="#ci">CI/CD with GitHub Actions</a>
+      <div class="group">Phase 4 · Capstone</div>
+      <a href="#capstone">Capstone checklist</a>
+      <a href="#pitfalls">Pitfalls & resources</a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <button class="toggle" id="menu-btn" aria-label="Open navigation">☰ Menu</button>
+      <span class="crumb">docs / learn-playwright</span>
+      <button class="toggle" id="theme-btn" aria-label="Toggle theme"><span id="theme-ico">◐</span> <span id="theme-lbl">Theme</span></button>
+    </div>
+
+    <header class="hero">
+      <span class="eyebrow">3-month roadmap · reference edition</span>
+      <h1>From manual tester to Playwright automation</h1>
+      <p>One concept, one code example, per step. Skim it as a wiki while you learn, or copy a snippet straight into your editor. Written for a QC who knows testing but is new to code.</p>
+      <div class="meta">
+        <span><b>Language</b> TypeScript</span>
+        <span><b>Pace</b> ~8–10 hrs/week</span>
+        <span><b>Duration</b> 12 weeks</span>
+        <span><b>Home base</b> playwright.dev</span>
+      </div>
+    </header>
+
+    <!-- ============ PHASE 1 ============ -->
+    <section class="phase" id="phase1">
+      <div class="phase-head"><span class="no">01</span><h2>Foundations</h2></div>
+      <p class="phase-wk">Weeks 1–3 · You can't master a tool built on JavaScript without a little JavaScript. Don't skip this.</p>
+
+      <div class="item" id="js-basics">
+        <span class="dot"></span>
+        <h3><a class="anchor" href="#js-basics">JavaScript basics</a><span class="tag">week 1</span></h3>
+        <p>The raw materials: <code>variables</code>, <code>arrays</code>, <code>objects</code>, and <code>functions</code>. A test is just a function that does things and checks results — so this is the grammar everything else is written in.</p>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">basics.ts</span><span class="lang">ts</span></figcaption>
+<pre><code class="language-typescript">// A variable holds a value; const can't be reassigned
+const siteUrl = "https://saucedemo.com";
+
+// An array = an ordered list (great for test data)
+const users = ["standard_user", "locked_out_user", "problem_user"];
+
+// An object = named fields grouped together
+const credentials = { username: "standard_user", password: "secret_sauce" };
+
+// A function takes input and returns output
+function buildLoginMessage(name: string): string {
+  return `Logging in as ${name}`;
+}
+
+// Loop over each item — you'll do this constantly with test data
+for (const user of users) {
+  console.log(buildLoginMessage(user));
+}</code></pre>
+        </figure>
+      </div>
+
+      <div class="item" id="async">
+        <span class="dot"></span>
+        <h3><a class="anchor" href="#async">Async / await & Promises</a><span class="tag">week 2 · critical</span></h3>
+        <p>Browser actions take <em>time</em> — a click, a page load, a network response. A <b>Promise</b> represents a value that isn't ready yet; <code>await</code> pauses until it is. This is <em>the</em> concept that unlocks Playwright.</p>
+        <div class="why"><b>Why it matters:</b> almost every Playwright command returns a Promise. Forget one <code>await</code> and your test races ahead of the browser and fails in confusing, flaky ways.</div>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">async.ts</span><span class="lang">ts</span></figcaption>
+<pre><code class="language-typescript">// Without await: fetchUser() returns a Promise, not the user
+const maybeUser = fetchUser(1);        // Promise { &lt;pending&gt; }  ❌
+
+// With await inside an async function: we wait for the real value
+async function showUser() {
+  const user = await fetchUser(1);     // pauses here until ready ✅
+  console.log(user.name);
+}
+
+// In Playwright, EVERY action is awaited:
+await page.goto("https://saucedemo.com");
+await page.getByPlaceholder("Username").fill("standard_user");
+await page.getByRole("button", { name: "Login" }).click();</code></pre>
+        </figure>
+      </div>
+
+      <div class="item" id="typescript">
+        <span class="dot"></span>
+        <h3><a class="anchor" href="#typescript">TypeScript essentials</a><span class="tag">week 2</span></h3>
+        <p>TypeScript = JavaScript + <b>types</b>. Types catch mistakes as you type (autocomplete, red squiggles) instead of at runtime. You need only the basics; Playwright supplies the rest.</p>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">types.ts</span><span class="lang">ts</span></figcaption>
+<pre><code class="language-typescript">// Annotate what a value is; the editor now guards you
+let attempts: number = 3;
+let isLoggedIn: boolean = false;
+
+// An interface describes the shape of an object
+interface User {
+  username: string;
+  password: string;
+  admin?: boolean;   // ? = optional
+}
+
+const u: User = { username: "standard_user", password: "secret_sauce" };
+
+// import / export = sharing code across files
+export const BASE_URL = "https://saucedemo.com";
+// in another file:  import { BASE_URL } from "./config";</code></pre>
+        </figure>
+      </div>
+
+      <div class="item" id="setup">
+        <span class="dot"></span>
+        <h3><a class="anchor" href="#setup">Project setup</a><span class="tag">week 3</span></h3>
+        <p>Install Node.js and VS Code, then let Playwright scaffold everything — config, example tests, and the browsers — with one command.</p>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">terminal</span><span class="lang">bash</span></figcaption>
+<pre><code class="language-bash"># Scaffold a new Playwright project (pick TypeScript when asked)
+npm init playwright@latest
+
+# Run the generated example tests
+npx playwright test
+
+# Open the rich HTML report of the last run
+npx playwright show-report</code></pre>
+        </figure>
+        <div class="why"><b>Milestone:</b> a Git repo on GitHub with one passing test. Learn <code>git clone / add / commit / push</code> now — you'll need it for CI later.</div>
+      </div>
+    </section>
+
+    <!-- ============ PHASE 2 ============ -->
+    <section class="phase" id="phase2">
+      <div class="phase-head"><span class="no">02</span><h2>Playwright core</h2></div>
+      <p class="phase-wk">Weeks 4–7 · The real thing. Keep <b>playwright.dev</b> open in a tab.</p>
+
+      <div class="item" id="locators">
+        <span class="dot"></span>
+        <h3><a class="anchor" href="#locators">Locators</a><span class="tag">week 4</span></h3>
+        <p>A <b>locator</b> is how you point at an element. Prefer user-facing locators (<code>getByRole</code>, <code>getByLabel</code>, <code>getByText</code>) — they mirror how a real person and a screen reader find things, so they survive CSS refactors.</p>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">locators.spec.ts</span><span class="lang">ts</span></figcaption>
+<pre><code class="language-typescript">// ✅ Preferred: by role + accessible name
+page.getByRole("button", { name: "Add to cart" });
+page.getByRole("link", { name: "Checkout" });
+
+// By label, placeholder, or visible text
+page.getByLabel("Email address");
+page.getByPlaceholder("Search products");
+page.getByText("Order complete");
+
+// A stable escape hatch for tricky elements
+page.getByTestId("cart-badge");   // matches data-testid="cart-badge"
+
+// Filtering & chaining when a page has many similar items
+page.getByRole("listitem")
+    .filter({ hasText: "Sauce Labs Backpack" })
+    .getByRole("button", { name: "Add to cart" });</code></pre>
+        </figure>
+      </div>
+
+      <div class="item" id="actions">
+        <span class="dot"></span>
+        <h3><a class="anchor" href="#actions">Actions</a><span class="tag">week 4</span></h3>
+        <p>What you <em>do</em> to a located element: click, type, check, choose. Each one auto-waits for the element to be ready before acting.</p>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">actions.spec.ts</span><span class="lang">ts</span></figcaption>
+<pre><code class="language-typescript">await page.getByPlaceholder("Username").fill("standard_user");   // set value
+await page.getByPlaceholder("Password").fill("secret_sauce");
+await page.getByRole("button", { name: "Login" }).click();       // click
+
+await page.getByLabel("Remember me").check();                    // checkbox
+await page.getByLabel("Country").selectOption("Vietnam");         // dropdown
+await page.getByRole("textbox").pressSequentially("hello", { delay: 80 });
+await page.getByRole("button", { name: "Menu" }).hover();         // hover</code></pre>
+        </figure>
+      </div>
+
+      <div class="item" id="assertions">
+        <span class="dot"></span>
+        <h3><a class="anchor" href="#assertions">Assertions & auto-waiting</a><span class="tag">week 5 · key</span></h3>
+        <p>Assertions verify the app did the right thing. Playwright's <b>web-first assertions</b> automatically retry until the condition is true or times out — which is why you almost never need manual sleeps.</p>
+        <div class="why"><b>Coming from manual testing:</b> think of each <code>expect</code> as one written test-case step — "the cart should show 1 item" — but checked by the machine, on every run.</div>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">assertions.spec.ts</span><span class="lang">ts</span></figcaption>
+<pre><code class="language-typescript">import { test, expect } from "@playwright/test";
+
+test("adds an item to the cart", async ({ page }) => {
+  await page.goto("https://www.saucedemo.com/inventory.html");
+  await page.getByRole("button", { name: "Add to cart" }).first().click();
+
+  // These auto-retry until true — no sleep() needed
+  await expect(page.getByTestId("cart-badge")).toHaveText("1");
+  await expect(page.getByRole("button", { name: "Remove" })).toBeVisible();
+  await expect(page).toHaveURL(/inventory/);
+});
+
+// ❌ Don't do this — brittle and slow
+// await page.waitForTimeout(3000);</code></pre>
+        </figure>
+      </div>
+
+      <div class="item" id="debugging">
+        <span class="dot"></span>
+        <h3><a class="anchor" href="#debugging">Debugging tools</a><span class="tag">week 6</span></h3>
+        <p>Playwright's tooling is its superpower. <b>Codegen</b> records clicks into code, <b>UI mode</b> runs tests visually with time-travel, and the <b>Trace Viewer</b> lets you replay a failure step-by-step after the fact.</p>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">terminal</span><span class="lang">bash</span></figcaption>
+<pre><code class="language-bash"># Record actions into ready-made code (great for learning locators)
+npx playwright codegen https://saucedemo.com
+
+# Interactive UI mode: watch, pick locators, time-travel through steps
+npx playwright test --ui
+
+# Step through a single test with the Inspector
+npx playwright test login.spec.ts --debug
+
+# Open a trace captured on failure and replay every step
+npx playwright show-trace trace.zip</code></pre>
+        </figure>
+        <div class="why"><b>Tip:</b> set <code>trace: "on-first-retry"</code> in your config so failures always leave a trace to inspect.</div>
+      </div>
+
+      <div class="item" id="structure">
+        <span class="dot"></span>
+        <h3><a class="anchor" href="#structure">Test structure & config</a><span class="tag">week 7</span></h3>
+        <p>Group related tests with <code>describe</code>, share setup with hooks like <code>beforeEach</code>, and centralize settings — base URL, browsers, timeouts — in <code>playwright.config.ts</code>.</p>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">playwright.config.ts</span><span class="lang">ts</span></figcaption>
+<pre><code class="language-typescript">import { defineConfig, devices } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./tests",
+  use: {
+    baseURL: "https://www.saucedemo.com",  // page.goto("/") uses this
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
+  },
+  retries: 1,
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "firefox",  use: { ...devices["Desktop Firefox"] } },
+    { name: "webkit",   use: { ...devices["Desktop Safari"] } },
+  ],
+});</code></pre>
+        </figure>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">cart.spec.ts</span><span class="lang">ts</span></figcaption>
+<pre><code class="language-typescript">import { test, expect } from "@playwright/test";
+
+test.describe("Shopping cart", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");               // uses baseURL from config
+    await page.getByPlaceholder("Username").fill("standard_user");
+    await page.getByPlaceholder("Password").fill("secret_sauce");
+    await page.getByRole("button", { name: "Login" }).click();
+  });
+
+  test("starts empty", async ({ page }) => {
+    await expect(page.getByTestId("cart-badge")).toBeHidden();
+  });
+});</code></pre>
+        </figure>
+      </div>
+
+      <div class="item" id="data-driven">
+        <span class="dot"></span>
+        <h3><a class="anchor" href="#data-driven">Data-driven tests</a><span class="tag">week 7</span></h3>
+        <p>One scenario, many inputs. Loop over a data array to generate a separate test per case — your manual "test matrix", automated.</p>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">login.data.spec.ts</span><span class="lang">ts</span></figcaption>
+<pre><code class="language-typescript">import { test, expect } from "@playwright/test";
+
+const cases = [
+  { user: "locked_out_user", error: "locked out" },
+  { user: "problem_user",    error: "" },
+];
+
+for (const { user, error } of cases) {
+  test(`login as ${user}`, async ({ page }) => {
+    await page.goto("/");
+    await page.getByPlaceholder("Username").fill(user);
+    await page.getByPlaceholder("Password").fill("secret_sauce");
+    await page.getByRole("button", { name: "Login" }).click();
+
+    if (error) {
+      await expect(page.getByTestId("error")).toContainText(error);
+    } else {
+      await expect(page).toHaveURL(/inventory/);
+    }
+  });
+}</code></pre>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============ PHASE 3 ============ -->
+    <section class="phase" id="phase3">
+      <div class="phase-head"><span class="no">03</span><h2>Professional patterns</h2></div>
+      <p class="phase-wk">Weeks 8–10 · Move from "writes tests" to "builds a framework".</p>
+
+      <div class="item" id="pom">
+        <span class="dot"></span>
+        <h3><a class="anchor" href="#pom">Page Object Model</a><span class="tag">week 8</span></h3>
+        <p>Put each page's locators and actions in its own class. Tests read like plain English; when the UI changes, you fix <em>one</em> file instead of fifty.</p>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">pages/LoginPage.ts</span><span class="lang">ts</span></figcaption>
+<pre><code class="language-typescript">import { type Page, type Locator } from "@playwright/test";
+
+export class LoginPage {
+  readonly username: Locator;
+  readonly password: Locator;
+  readonly loginBtn: Locator;
+
+  constructor(private page: Page) {
+    this.username = page.getByPlaceholder("Username");
+    this.password = page.getByPlaceholder("Password");
+    this.loginBtn = page.getByRole("button", { name: "Login" });
+  }
+
+  async goto() { await this.page.goto("/"); }
+
+  async loginAs(user: string, pass: string) {
+    await this.username.fill(user);
+    await this.password.fill(pass);
+    await this.loginBtn.click();
+  }
+}</code></pre>
+        </figure>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">login.spec.ts (using the page object)</span><span class="lang">ts</span></figcaption>
+<pre><code class="language-typescript">import { test, expect } from "@playwright/test";
+import { LoginPage } from "../pages/LoginPage";
+
+test("valid login lands on inventory", async ({ page }) => {
+  const login = new LoginPage(page);
+  await login.goto();
+  await login.loginAs("standard_user", "secret_sauce");
+  await expect(page).toHaveURL(/inventory/);
+});</code></pre>
+        </figure>
+      </div>
+
+      <div class="item" id="api">
+        <span class="dot"></span>
+        <h3><a class="anchor" href="#api">API testing</a><span class="tag">week 9</span></h3>
+        <p>Playwright talks to APIs too. Validate endpoints directly, or use the API to <em>set up state fast</em> before verifying it in the UI — far quicker than clicking through setup screens.</p>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">api.spec.ts</span><span class="lang">ts</span></figcaption>
+<pre><code class="language-typescript">import { test, expect } from "@playwright/test";
+
+test("GET /users returns a list", async ({ request }) => {
+  const res = await request.get("https://reqres.in/api/users?page=2");
+  expect(res.ok()).toBeTruthy();
+  expect(res.status()).toBe(200);
+
+  const body = await res.json();
+  expect(body.data.length).toBeGreaterThan(0);
+});
+
+test("POST creates a user", async ({ request }) => {
+  const res = await request.post("https://reqres.in/api/users", {
+    data: { name: "QA", job: "automation" },
+  });
+  expect(res.status()).toBe(201);
+});</code></pre>
+        </figure>
+      </div>
+
+      <div class="item" id="auth">
+        <span class="dot"></span>
+        <h3><a class="anchor" href="#auth">Auth reuse with storageState</a><span class="tag">week 9 · huge time-saver</span></h3>
+        <p>Log in <em>once</em> in a setup step, save the session to a file, then reuse it in every test. Your tests skip the login UI entirely and run much faster.</p>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">auth.setup.ts</span><span class="lang">ts</span></figcaption>
+<pre><code class="language-typescript">import { test as setup, expect } from "@playwright/test";
+
+const authFile = "playwright/.auth/user.json";
+
+setup("authenticate", async ({ page }) => {
+  await page.goto("/");
+  await page.getByPlaceholder("Username").fill("standard_user");
+  await page.getByPlaceholder("Password").fill("secret_sauce");
+  await page.getByRole("button", { name: "Login" }).click();
+  await expect(page).toHaveURL(/inventory/);
+
+  // Save cookies + localStorage to a file for reuse
+  await page.context().storageState({ path: authFile });
+});</code></pre>
+        </figure>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">playwright.config.ts (wire it up)</span><span class="lang">ts</span></figcaption>
+<pre><code class="language-typescript">projects: [
+  { name: "setup", testMatch: /auth\.setup\.ts/ },
+  {
+    name: "chromium",
+    dependencies: ["setup"],                       // run setup first
+    use: { storageState: "playwright/.auth/user.json" }, // reuse session
+  },
+]</code></pre>
+        </figure>
+      </div>
+
+      <div class="item" id="ci">
+        <span class="dot"></span>
+        <h3><a class="anchor" href="#ci">CI/CD with GitHub Actions</a><span class="tag">week 10</span></h3>
+        <p>Run the whole suite automatically on every push. Failures upload the HTML report and traces as artifacts you can download and replay.</p>
+        <figure class="code">
+          <figcaption><span class="dots"><i></i><i></i><i></i></span><span class="fname">.github/workflows/playwright.yml</span><span class="lang">yaml</span></figcaption>
+<pre><code class="language-yaml">name: Playwright Tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7</code></pre>
+        </figure>
+        <div class="why"><b>Milestone:</b> a green check ✔ on your commits — the signal that your tests protect the app on every change.</div>
+      </div>
+    </section>
+
+    <!-- ============ PHASE 4 ============ -->
+    <section class="phase" id="phase4">
+      <div class="phase-head"><span class="no">04</span><h2>Capstone & mastery</h2></div>
+      <p class="phase-wk">Weeks 11–12 · Prove it by building something real and shareable.</p>
+
+      <div class="callout" id="capstone">
+        <h3>🎯 Capstone: build a complete framework</h3>
+        <p style="margin:0 0 14px;color:var(--ink-soft);font-size:14px;">Pick a real app — a demo store, or ideally something from work — and assemble everything above into one portfolio project you can show in interviews or bring to your team.</p>
+        <ul>
+          <li><b>Structure:</b> Page Object Model, tidy folders, a clear <code>README</code> explaining your design choices.</li>
+          <li><b>Coverage:</b> 15–25 meaningful tests mixing UI and API flows.</li>
+          <li><b>Speed:</b> auth reuse via <code>storageState</code>, data-driven cases, shared fixtures.</li>
+          <li><b>Automation:</b> CI running on every commit, with reports and traces on failure.</li>
+          <li><b>Cross-browser:</b> passing on Chromium, Firefox, and WebKit.</li>
+        </ul>
+      </div>
+
+      <div class="callout warn" id="pitfalls">
+        <h3><span class="ico">⚠</span> Pitfalls to avoid (especially from a manual background)</h3>
+        <ul>
+          <li><b>Don't automate everything.</b> Automate stable, repetitive, high-value flows. Keep exploratory and UX testing manual — that judgment is your edge.</li>
+          <li><b>Never <code>waitForTimeout</code> to "fix" flakiness.</b> Use web-first assertions that auto-retry; fix the real cause.</li>
+          <li><b>Don't lean on brittle CSS/XPath.</b> Prefer role- and label-based locators that survive redesigns.</li>
+          <li><b>Read before you copy.</b> Codegen and AI give you a starting point — understand each line, then refine it.</li>
+          <li><b>Code every session.</b> 70% hands-on, 30% reading. Skill is built by typing, not watching.</li>
+        </ul>
+      </div>
+
+      <div class="grid2">
+        <div class="rescard"><div class="k">Home base</div><div class="v"><a href="https://playwright.dev">playwright.dev</a><small>Docs answer ~90% of questions</small></div></div>
+        <div class="rescard"><div class="k">JS / TS</div><div class="v"><a href="https://javascript.info">javascript.info</a><small>Clear, deep fundamentals</small></div></div>
+        <div class="rescard"><div class="k">Practice</div><div class="v">saucedemo.com<small>the-internet.herokuapp.com · automationexercise.com</small></div></div>
+        <div class="rescard"><div class="k">Habit</div><div class="v">Map manual cases → automation<small>Ask "what could this feature automate?"</small></div></div>
+      </div>
+
+      <div class="foot">
+        Reference wiki · built to accompany your 12-week Playwright roadmap. Snippets target <code>@playwright/test</code> with TypeScript. Toggle theme top-right · anchor links on every heading.
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  // ---- Syntax highlighting ----
+  try { hljs.highlightAll(); } catch (e) {}
+
+  // ---- Theme toggle (respects system, remembers choice) ----
+  (function () {
+    const root = document.documentElement;
+    const btn = document.getElementById("theme-btn");
+    const ico = document.getElementById("theme-ico");
+    const lbl = document.getElementById("theme-lbl");
+    let saved = null;
+    try { saved = localStorage.getItem("pw-theme"); } catch (e) {}
+    if (saved) root.setAttribute("data-theme", saved);
+
+    function label() {
+      const cur = root.getAttribute("data-theme");
+      const dark = cur ? cur === "dark"
+        : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      ico.textContent = dark ? "☾" : "☀";
+      lbl.textContent = dark ? "Dark" : "Light";
+    }
+    label();
+    btn.addEventListener("click", function () {
+      const cur = root.getAttribute("data-theme");
+      const dark = cur ? cur === "dark"
+        : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const next = dark ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try { localStorage.setItem("pw-theme", next); } catch (e) {}
+      label();
+    });
+  })();
+
+  // ---- Mobile nav ----
+  (function () {
+    const body = document.body;
+    const menu = document.getElementById("menu-btn");
+    const sidebar = document.getElementById("sidebar");
+    if (menu) menu.addEventListener("click", function (e) {
+      e.stopPropagation();
+      body.classList.toggle("nav-open");
+    });
+    document.addEventListener("click", function (e) {
+      if (body.classList.contains("nav-open") && !sidebar.contains(e.target)) {
+        body.classList.remove("nav-open");
+      }
+    });
+    sidebar.addEventListener("click", function (e) {
+      if (e.target.tagName === "A") body.classList.remove("nav-open");
+    });
+  })();
+</script>
+</body>
+</html>
